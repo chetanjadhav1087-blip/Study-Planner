@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState} from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -48,22 +48,22 @@ export default function AddTaskForm({
         }
       />
 
-       <Input
-    type="text"
-    placeholder="Subject"
-    value={subject}
-    onChange={(e) =>
-      setSubject(e.target.value)
-    }
-  />
+      <Input
+        type="text"
+        placeholder="Subject"
+        value={subject}
+        onChange={(e) =>
+          setSubject(e.target.value)
+        }
+      />
 
-  <Input
-    type="date"
-    value={dueDate}
-    onChange={(e) =>
-      setDueDate(e.target.value)
-    }
-    />
+      <Input
+        type="date"
+        value={dueDate}
+        onChange={(e) =>
+          setDueDate(e.target.value)
+        }
+      />
 
       <Button type="submit">
         Add

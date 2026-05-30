@@ -4,12 +4,12 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 
-import { Task } from "@/src/task/task";
+import { Task } from "@/src/types/task";
 
 type TaskCardProp = {
     task: Task;
-    onToggle: (id: number) => void;
-    onDelete: (id: number) => void;
+    onToggle: (id: string) => void;
+    onDelete: (id: string) => void;
 }
 
 export default function TaskCard({
