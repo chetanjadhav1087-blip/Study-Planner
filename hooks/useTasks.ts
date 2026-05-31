@@ -28,6 +28,7 @@ export function useTasks() {
             subject,
             dueDate,
             completed: false,
+            createdAt: new Date().toUTCString(),
         };
 
         setTasks((prev) => [...prev, newTask,]);
@@ -55,10 +56,31 @@ export function useTasks() {
         );
     }
 
+    function updateTask(
+        id: string,
+        title: string,
+        subject: string,
+        dueDate: string
+    ) {
+        setTasks((prev) =>
+            prev.map((task) =>
+                task.id === id
+                    ? {
+                        ...task,
+                        title,
+                        subject,
+                        dueDate,
+                    }
+                    : task
+            )
+        );
+    }
+
     return {
         tasks,
         addTask,
         toggleTask,
         deleteTask,
+        updateTask,
     };
 }

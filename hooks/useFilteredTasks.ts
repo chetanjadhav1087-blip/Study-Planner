@@ -1,5 +1,5 @@
-import { Task } from "@/src/types/task";
-import { Filter } from "@/src/types/filter";
+import { Task } from "@/types/task";
+import { Filter } from "@/types/filter";
 
 export function useFilteredTasks(
   tasks: Task[],

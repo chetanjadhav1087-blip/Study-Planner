@@ -1,3 +1,25 @@
+/*
+TODO :
+Move 
+totalTasks
+completedTasks
+pendingTasks
+overdueTasks
+dueTodayTasks
+dueThisWeekTasks
+
+to src/hooks/useTaskStats.ts
+and return 
+{
+  totalTasks,
+  completedTasks,
+  pendingTasks,
+  overdueTasks,
+  dueTodayTasks,
+  dueThisWeekTasks
+}
+*/
+
 "use client"
 
 import { useState } from "react";
@@ -9,79 +31,44 @@ import TaskCard from "@/components/TaskCard";
 import StatsCard from "@/components/StatsCard";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-import { Filter } from "@/src/types/filter";
+import { Filter } from "@/types/filter";
+import { SortOption } from "@/types/SortOption";
 
-import { useTasks } from "@/src/hooks/useTasks";
-import { useFilteredTasks } from "@/src/hooks/useFilteredTasks";
+import { useTasks } from "@/hooks/useTasks";
+import { useFilteredTasks } from "@/hooks/useFilteredTasks";
+
+import {
+  getOverdueTasks,
+  getDueTodayTasks,
+  getDueThisWeekTasks
+} from "@/lib/taskStats";
 
 export default function Home() {
-  // const [tasks, setTasks] = useState<Task[]>([]);
-  const { tasks, addTask, toggleTask, deleteTask } = useTasks();
+  const [search, setSearch] = useState("");
+  const { tasks, addTask, toggleTask, deleteTask, updateTask } = useTasks();
+  
+
   const [filter, setFilter] = useState<Filter>('all');
+  const [sortBy, setSortBy] = useState<SortOption>("dueDate");
 
   const filteredTasks = useFilteredTasks(tasks, filter);
-  // const [filter, setFilter] = useState<Filter>("all");
-
-  // useEffect(() => {
-  //   const savedTasks = localStorage.getItem('tasks');
-
-  //   if (savedTasks) {
-  //     setTasks(JSON.parse(savedTasks));
-  //   }
-  // }, []);
-
-  // useEffect(() => {
-  //   localStorage.setItem('tasks', JSON.stringify(tasks));
-  // }, [tasks])
-
-  // function addTask(
-  //   title: string,
-  //   subject: string,
-  //   dueDate: string,
-  // ) {
-  //   const newTask: Task = {
-  //     id: crypto.randomUUID(),
-  //     title,
-  //     subject,
-  //     dueDate,
-  //     completed: false,
-  //   };
-
-  //   setTasks([...tasks, newTask]);
-  // }
-
-  // function toggleTask(id: string) {
-  //   const updatedTask = tasks.map((task) =>
-  //     task.id === id ? {
-  //       ...task, completed: !task.completed,
-  //     } :
-  //       task
-  //   );
-
-  //   setTasks(updatedTask);
-  // }
-
-  // function deleteTask(id: string) {
-  //   const filteredTask = tasks.filter((task) =>
-  //     task.id !== id
-  //   );
-
-  //   setTasks(filteredTask);
-  // }
-
-  // const filteredTask = tasks.filter(
-  //   (task) => {
-  //     if (filter === 'pending') {
-  //       return !task.completed;
-  //     }
-  //     if (filter === 'completed') {
-  //       return task.completed;
-  //     }
-
-  //     return true;
-  //   }
-  // );
+  const searchTasks = filteredTasks.filter((task) =>
+    task.title
+      .toLowerCase()
+      .includes(search.toLowerCase()) ||
+    task.subject
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  )
 
   const totalTasks = tasks.length;
 
@@ -93,17 +80,55 @@ export default function Home() {
     (task) => !task.completed
   ).length;
 
-  function completionRate(){
-    if(totalTasks !== 0){
-      return (completedTasks/totalTasks)*100;
+  function completionRate() {
+    if (totalTasks !== 0) {
+      return (completedTasks / totalTasks) * 100;
     }
   }
+
+  const sortedTasks = [...searchTasks].sort(
+    (a, b) => {
+      switch (sortBy) {
+        case "newest":
+          return (
+            new Date(b.createdAt).getTime() -
+            new Date(a.createdAt).getTime()
+          );
+
+        case "oldest":
+          return (
+            new Date(a.createdAt).getTime() -
+            new Date(b.createdAt).getTime()
+          );
+
+        case "completed":
+          return Number(b.completed) -
+            Number(a.completed);
+
+        case "dueDate":
+        default:
+          return (
+            new Date(a.dueDate).getTime() -
+            new Date(b.dueDate).getTime()
+          );
+      }
+    }
+  );
+
+  const overdueTasks =
+    getOverdueTasks(tasks);
+
+  const dueTodayTasks =
+    getDueTodayTasks(tasks);
+
+  const dueThisWeekTasks =
+    getDueThisWeekTasks(tasks);
   return (
     <main className="min-h-screen">
       <Navbar />
 
       <div className="max-w-xl mx-auto p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           <StatsCard
             title="Total Tasks"
             value={totalTasks}
@@ -118,6 +143,21 @@ export default function Home() {
           <StatsCard
             title="Pending"
             value={pendingTasks}
+          />
+
+          <StatsCard
+            title="Overdue"
+            value={overdueTasks.length}
+          />
+
+          <StatsCard
+            title="Due Today"
+            value={dueTodayTasks.length}
+          />
+
+          <StatsCard
+            title="Due This Week"
+            value={dueThisWeekTasks.length}
           />
         </div>
 
@@ -155,17 +195,54 @@ export default function Home() {
             onClick={() => setFilter("completed")}
           >
             <span>Completed({completedTasks})</span>
-            
+
           </Button>
         </div>
 
+        <Select
+          value={sortBy}
+          onValueChange={(value) =>
+            setSortBy(value as SortOption)
+          }
+        >
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Sort Tasks" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value="dueDate">
+              Due Date
+            </SelectItem>
+
+            <SelectItem value="newest">
+              Newest
+            </SelectItem>
+
+            <SelectItem value="oldest">
+              Oldest
+            </SelectItem>
+
+            <SelectItem value="completed">
+              Completed First
+            </SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Input
+          placeholder="Search tasks..."
+          value={search}
+          onChange={(e) =>
+            setSearch(e.target.value)
+          }
+        />
         <div className="space-y-2">
-          {filteredTasks.map((task) => (
+          {sortedTasks.map((task) => (
             <TaskCard
               key={task.id}
               task={task}
               onToggle={toggleTask}
               onDelete={deleteTask}
+              onUpdateTask={updateTask}
             />
           ))}
         </div>

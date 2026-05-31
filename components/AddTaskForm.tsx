@@ -10,15 +10,21 @@ type AddTaskFormProps = {
     subject: string,
     dueDate: string
   ) => void;
+  initialTitle?: string;
+  initialSubject?: string;
+  initialDueDate?: string;
 };
 
 export default function AddTaskForm({
-  onAddTask,
+  onAddTask, initialDueDate, initialSubject, initialTitle
 }: AddTaskFormProps) {
 
-  const [title, setTitle] = useState("");
-  const [subject, setSubject] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [title, setTitle] = useState(initialTitle ?? "");
+const [subject, setSubject] =
+  useState(initialSubject ?? "");
+
+const [dueDate, setDueDate] =
+  useState(initialDueDate ?? "");
 
   function handleSubmit(
     e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>
