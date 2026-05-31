@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 
@@ -16,23 +17,17 @@ import AddTaskForm from "./AddTaskForm";
 
 import { Task } from "@/types/task";
 
+import { updateTask } from "@/app/actions/task-actions";
+
 type EditTaskDialogProps = {
   task: Task;
-
-  onUpdateTask: (
-    id: string,
-    title: string,
-    subject: string,
-    dueDate: string
-  ) => void;
 };
 
 export default function EditTaskDialog({
   task,
-  onUpdateTask,
 }: EditTaskDialogProps) {
-  const [open, setOpen] =
-    useState(false);
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <Dialog
@@ -59,19 +54,17 @@ export default function EditTaskDialog({
           initialTitle={task.title}
           initialSubject={task.subject}
           initialDueDate={task.dueDate}
-          onAddTask={(
-            title,
-            subject,
-            dueDate
-          ) => {
-            onUpdateTask(
+          onAddTask={async (data) => {
+            await updateTask(
               task.id,
-              title,
-              subject,
-              dueDate
+              data.title,
+              data.subject,
+              data.dueDate
             );
 
             setOpen(false);
+
+            router.refresh();
           }}
         />
       </DialogContent>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import {
   Dialog,
@@ -14,19 +15,13 @@ import { Button } from "@/components/ui/button";
 
 import AddTaskForm from "./AddTaskForm";
 
-type AddTaskDialogProps = {
-  onAddTask: (
-    title: string,
-    subject: string,
-    dueDate: string
-  ) => void;
-};
+import { createTask } from "@/app/actions/task-actions";
 
-export default function AddTaskDialog({
-  onAddTask,
-}: AddTaskDialogProps) {
+export default function AddTaskDialog() {
   const [open, setOpen] =
     useState(false);
+
+  const router = useRouter();
 
   return (
     <Dialog
@@ -47,18 +42,12 @@ export default function AddTaskDialog({
         </DialogHeader>
 
         <AddTaskForm
-          onAddTask={(
-            title,
-            subject,
-            dueDate
-          ) => {
-            onAddTask(
-              title,
-              subject,
-              dueDate
-            );
+          onAddTask={async (data) => {
+            await createTask(data);
 
             setOpen(false);
+
+            router.refresh();
           }}
         />
       </DialogContent>

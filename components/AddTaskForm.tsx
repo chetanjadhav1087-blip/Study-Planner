@@ -1,15 +1,16 @@
 "use client";
 
-import { useState} from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 type AddTaskFormProps = {
-  onAddTask: (
-    title: string,
-    subject: string,
-    dueDate: string
-  ) => void;
+  onAddTask: (data: {
+    title: string;
+    subject: string;
+    dueDate: string;
+  }) => Promise<void> | void;
+
   initialTitle?: string;
   initialSubject?: string;
   initialDueDate?: string;
@@ -20,21 +21,24 @@ export default function AddTaskForm({
 }: AddTaskFormProps) {
 
   const [title, setTitle] = useState(initialTitle ?? "");
-const [subject, setSubject] =
-  useState(initialSubject ?? "");
+  const [subject, setSubject] =
+    useState(initialSubject ?? "");
 
-const [dueDate, setDueDate] =
-  useState(initialDueDate ?? "");
+  const [dueDate, setDueDate] =
+    useState(initialDueDate ?? "");
 
-  function handleSubmit(
+  async function handleSubmit(
     e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>
   ) {
     e.preventDefault();
 
     if (!title.trim()) return;
 
-    onAddTask(title, subject, dueDate);
-
+    await onAddTask({
+      title,
+      subject,
+      dueDate,
+    });
     setTitle("");
     setSubject("");
     setDueDate("");

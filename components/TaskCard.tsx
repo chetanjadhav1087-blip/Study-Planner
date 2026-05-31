@@ -8,38 +8,40 @@ import { Badge } from "@/components/ui/badge";
 import { Task } from "@/types/task";
 
 import EditTaskDialog from "./EditTaskDialog";
+import { deleteTask, toggle } from "@/app/actions/task-actions";
+
+import { useRouter } from "next/navigation";
 
 type TaskCardProp = {
     task: Task;
     onToggle: (id: string) => void;
     onDelete: (id: string) => void;
-    onUpdateTask: (
-        id: string,
-        title: string,
-        subject: string,
-        dueDate: string
-    ) => void;
 }
 
 export default function TaskCard({
     task,
     onToggle,
     onDelete,
-    onUpdateTask,
 }: TaskCardProp) {
 
     const isOverdue =
         !task.completed &&
         new Date(task.dueDate) < new Date();
 
+    const router = useRouter();
+
     return (
         <Card className="p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <Checkbox
                     checked={task.completed}
-                    onCheckedChange={() =>
-                        onToggle(task.id)
-                    }
+                    onCheckedChange={async () => {
+                        await toggle(
+                            task.id,
+                            task.completed
+                        );
+                        router.refresh();
+                    }}
                 />
 
                 <p
@@ -66,15 +68,15 @@ export default function TaskCard({
             <div className="flex gap-2">
                 <EditTaskDialog
                     task={task}
-                    onUpdateTask={onUpdateTask}
                 />
 
                 <Button
                     variant="destructive"
-                    size="sm"
-                    onClick={() =>
-                        onDelete(task.id)
-                    }
+                    onClick={async () => {
+                        await deleteTask(task.id);
+
+                        router.refresh();
+                    }}
                 >
                     Delete
                 </Button>
