@@ -1,8 +1,8 @@
 "use server"
 
 import { prisma } from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-
 
 type CreateTaskInput = {
   title: string;
@@ -13,11 +13,18 @@ type CreateTaskInput = {
 export async function createTask(
   data: CreateTaskInput
 ) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
   await prisma.task.create({
     data: {
       title: data.title,
       subject: data.subject,
       dueDate: new Date(data.dueDate),
+      userId,
     },
   });
 
@@ -25,7 +32,16 @@ export async function createTask(
 }
 
 export async function getTasks() {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return [];
+  }
+
   return prisma.task.findMany({
+    where: {
+      userId,
+    },
     orderBy: {
       createdAt: "desc",
     },
@@ -33,20 +49,41 @@ export async function getTasks() {
 }
 
 export async function deleteTask(id: string) {
-    await prisma.task.delete({
-        where: { id },
-    });
-    revalidatePath("/");
+  const { userId } = await auth();
+
+  const task = await prisma.task.findUnique({
+    where: { id },
+  });
+
+  if (task?.userId !== userId) {
+    throw new Error("Unauthorized");
+  }
+
+  await prisma.task.delete({
+    where: {
+      id,
+    },
+  });
+  revalidatePath("/");
 }
 
 export async function toggle(id: string, completed: boolean) {
-    await prisma.task.update({
-        where: { id },
-        data: {
-            completed: !completed,
-        },
-    });
-    revalidatePath("/");
+
+  const { userId } = await auth();
+  const task = await prisma.task.findUnique({
+    where: { id },
+  });
+
+  if (task?.userId !== userId) {
+    throw new Error("Unauthorized");
+  }
+  await prisma.task.update({
+    where: { id },
+    data: {
+      completed: !completed,
+    },
+  });
+  revalidatePath("/");
 }
 
 export async function updateTask(
@@ -55,6 +92,14 @@ export async function updateTask(
   subject: string,
   dueDate: string
 ) {
+  const { userId } = await auth();
+  const task = await prisma.task.findUnique({
+    where: { id },
+  });
+
+  if (task?.userId !== userId) {
+    throw new Error("Unauthorized");
+  }
   await prisma.task.update({
     where: { id },
     data: {

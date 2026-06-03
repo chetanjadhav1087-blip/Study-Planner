@@ -1,16 +1,24 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+
+import StudySessionButton from "./StudySessionGutton";
+import PomodoroTimer from "./PomodoroTimer";
 
 import { Task } from "@/types/task";
 
 import EditTaskDialog from "./EditTaskDialog";
 import { deleteTask, toggle } from "@/app/actions/task-actions";
 
+import { getTotalStudyTime } from "@/app/actions/session-action";
+
 import { useRouter } from "next/navigation";
+
 
 type TaskCardProp = {
     task: Task;
@@ -20,9 +28,22 @@ type TaskCardProp = {
 
 export default function TaskCard({
     task,
-    onToggle,
-    onDelete,
+
 }: TaskCardProp) {
+
+    const [studyTime, setStudyTime] =
+        useState(0);
+
+    useEffect(() => {
+        async function loadStudyTime() {
+            const total =
+                await getTotalStudyTime();
+
+            setStudyTime(total);
+        }
+
+        loadStudyTime();
+    }, [task.id]);
 
     const isOverdue =
         !task.completed &&
@@ -66,6 +87,17 @@ export default function TaskCard({
             </div>
 
             <div className="flex gap-2">
+                <StudySessionButton
+                    taskId={task.id}
+                />
+
+                <p className="text-xs text-muted-foreground">
+                    Studied: {studyTime} min
+                </p>
+
+                <PomodoroTimer
+                    taskId={task.id}
+                />
                 <EditTaskDialog
                     task={task}
                 />
@@ -74,12 +106,13 @@ export default function TaskCard({
                     variant="destructive"
                     onClick={async () => {
                         await deleteTask(task.id);
-
                         router.refresh();
                     }}
                 >
                     Delete
                 </Button>
+
+
             </div>
 
 
