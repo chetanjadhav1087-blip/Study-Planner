@@ -1,8 +1,7 @@
 // app/api/test/route.ts
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
 
 export async function GET() {
   const tasks = await prisma.task.findMany();
