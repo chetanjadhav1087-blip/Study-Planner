@@ -26,7 +26,7 @@ export default function Navbar() {
               {isSignedIn ? (
                 <div className="flex items-center gap-3.5">
                   {/* Clerk profile picture + account management */}
-                  <UserButton afterSignOutUrl="/sign-in" />
+                  <UserButton />
 
                   <SignOutButton redirectUrl="/sign-in">
                     <Button
