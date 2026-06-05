@@ -20,11 +20,11 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           <Show when="signed-in">
             <div className="flex items-center gap-3.5">
-              <UserButton signOutUrl="/sign-in" />
+
               <SignOutButton redirectUrl="/sign-in">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
+                <Button
+                  size="sm"
+                  variant="outline"
                   className="h-8 gap-1.5 px-3 text-xs font-semibold text-muted-foreground hover:text-destructive hover:border-destructive/30 hover:bg-destructive/5 transition-all shadow-sm rounded-md"
                 >
                   <LogOut className="h-3.5 w-3.5" />
